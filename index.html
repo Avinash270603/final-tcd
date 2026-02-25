@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ABSLI · TCD Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f6f2;
+  --surface:#fff;
+  --surface2:#f3f0eb;
+  --border:#e6e0d8;
+  --border2:#cec7bc;
+  --navy:#0f1d35;
+  --navy2:#1c2e50;
+  --gold:#b8912a;--gold2:#d4a840;--gold3:#f2cb6a;--gold-light:#fef6e0;
+  --text:#18140f;--text2:#38322a;--muted:#8a8278;--light:#b5afa6;
+  --credit:#1e5f8a;--credit2:#2678aa;--credit-light:#e8f2fa;
+  --term:#1a6b4a;--term2:#22885e;--term-light:#e8f5ef;
+  --both:#7c4a1e;--both2:#a0621e;--both-light:#fdf0e4;
+}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;min-height:100vh;}
+
+/* HEADER */
+header{background:var(--navy);border-bottom:2px solid var(--gold);padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:300;box-shadow:0 2px 20px rgba(0,0,0,0.3);}
+.brand{display:flex;align-items:center;gap:13px;}
+.emblem{width:34px;height:34px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:15px;color:var(--navy);box-shadow:0 2px 10px #d4a84355;flex-shrink:0;}
+.brand-name{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;color:#f4efe6;}
+.brand-name em{color:var(--gold3);font-style:normal;}
+.brand-sub{font-size:9px;color:#7080a0;letter-spacing:2px;text-transform:uppercase;}
+.hdr-right{display:flex;align-items:center;gap:9px;}
+.hdr-chip{background:#ffffff10;border:1px solid #ffffff1a;border-radius:16px;padding:4px 11px;font-size:10.5px;color:#a8b8d0;display:flex;align-items:center;gap:5px;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--gold3);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+#hdrDate{font-size:10.5px;color:#6878a0;}
+#tcPill{display:none;}
+
+/* PRODUCT SECTION */
+.product-section{background:linear-gradient(155deg,var(--navy) 0%,var(--navy2) 55%,#1d3460 100%);padding:22px 28px 20px;border-bottom:1px solid #28386a;position:relative;overflow:hidden;}
+.product-section::after{content:'';position:absolute;right:-60px;top:-60px;width:280px;height:280px;background:radial-gradient(circle,#d4a84312,transparent 65%);border-radius:50%;pointer-events:none;}
+.ps-header{display:flex;align-items:baseline;gap:10px;margin-bottom:4px;}
+.ps-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#f0ebe0;}
+.ps-title em{color:var(--gold3);font-style:italic;}
+.ps-sub{font-size:11px;color:#6a7a9a;margin-bottom:16px;}
+
+/* Category rows */
+.cat-section{margin-bottom:14px;}
+.cat-label{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;font-weight:600;margin-bottom:9px;display:flex;align-items:center;gap:8px;}
+.cat-credit{color:#7ab8e0;}
+.cat-term{color:#7ad4a8;}
+.cat-combo{color:#f5c07a;}
+.cat-label::after{content:'';flex:1;height:1px;background:currentColor;opacity:0.18;}
+
+.chips-row{display:flex;flex-wrap:wrap;gap:7px;}
+.prod-chip{background:#ffffff0a;border:1.5px solid #ffffff15;border-radius:20px;padding:6px 14px;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#c0d0e8;font-weight:500;white-space:nowrap;}
+.prod-chip:hover{background:#ffffff15;border-color:#ffffff28;transform:translateY(-1px);}
+.prod-chip.sel-credit{background:var(--credit-light);border-color:var(--credit2);color:var(--credit);box-shadow:0 2px 10px #2678aa22;}
+.prod-chip.sel-term{background:var(--term-light);border-color:var(--term2);color:var(--term);box-shadow:0 2px 10px #22885e22;}
+.prod-chip.sel-both{background:var(--both-light);border-color:var(--both2);color:var(--both);box-shadow:0 2px 10px #a0621e22;}
+.chip-ico{font-size:12px;}
+.chip-ck{width:14px;height:14px;border-radius:50%;display:none;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0;}
+.prod-chip.sel-credit .chip-ck{display:flex;background:var(--credit2);color:#fff;}
+.prod-chip.sel-term .chip-ck{display:flex;background:var(--term2);color:#fff;}
+.prod-chip.sel-both .chip-ck{display:flex;background:var(--both2);color:#fff;}
+
+/* MAIN */
+.main-layout{display:grid;grid-template-columns:370px 1fr;min-height:calc(100vh - 58px - 198px);}
+
+/* LEFT PANEL */
+.left-panel{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto;}
+.left-panel::-webkit-scrollbar{width:3px;}
+.left-panel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+.lp-block{padding:16px 20px;border-bottom:1px solid var(--border);}
+.blk-lbl{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);font-weight:600;margin-bottom:11px;display:flex;align-items:center;gap:7px;}
+.blk-lbl::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* Selected strip */
+.sel-strip{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:9px 13px;display:flex;align-items:center;gap:10px;margin-bottom:13px;transition:border-color 0.2s;}
+.ss-ico{font-size:17px;flex-shrink:0;}
+.ss-name{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:600;color:var(--navy2);}
+.ss-cat{font-size:10px;color:var(--muted);margin-top:1px;}
+.strip-credit{border-left:3px solid var(--credit2);}
+.strip-term{border-left:3px solid var(--term2);}
+.strip-both{border-left:3px solid var(--both2);}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.fld{display:flex;flex-direction:column;gap:4px;}
+.fld-lbl{font-size:10px;color:var(--muted);font-weight:500;}
+
+input,select,textarea{background:var(--surface2);border:1.5px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12.5px;padding:7px 10px;outline:none;width:100%;transition:all 0.15s;}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);background:#fff;box-shadow:0 0 0 3px var(--gold-light);}
+select option{background:#fff;}
+
+/* Module + SubModule */
+.module-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.mod-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;}
+.mod-chip{background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:3px 9px;font-size:10.5px;color:var(--muted);cursor:pointer;transition:all 0.14s;font-weight:500;}
+.mod-chip:hover{border-color:var(--gold);color:var(--gold);}
+.mod-chip.active{background:var(--gold-light);border-color:var(--gold);color:var(--gold);}
+
+/* SRS */
+.srs-block{flex:1;padding:14px 20px;display:flex;flex-direction:column;gap:7px;}
+.srs-hd{display:flex;align-items:center;justify-content:space-between;}
+.srs-lbl{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);font-weight:600;}
+.srs-clr{font-size:11px;color:var(--light);cursor:pointer;transition:color 0.14s;}
+.srs-clr:hover{color:var(--muted);}
+.srs-box{flex:1;min-height:180px;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:11.5px;padding:12px;resize:none;outline:none;line-height:1.75;transition:all 0.18s;}
+.srs-box:focus{border-color:var(--gold);background:#fff;box-shadow:0 0 0 3px var(--gold-light);}
+.srs-box::placeholder{color:var(--light);}
+.chr-count{font-size:10px;color:var(--light);text-align:right;}
+
+/* FILE UPLOAD */
+.upload-row{display:flex;gap:7px;margin-bottom:8px;align-items:center;}
+.upload-btn{background:var(--surface2);border:1.5px dashed var(--border2);border-radius:7px;padding:6px 12px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all 0.15s;white-space:nowrap;}
+.upload-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-light);}
+.upload-file-label{font-size:10.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;}
+.upload-progress{font-size:10px;color:var(--gold);display:none;}
+#fileInput{display:none;}
+
+.gen-wrap{padding:14px 20px;}
+.gen-btn{width:100%;padding:12px;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.22s;display:flex;align-items:center;justify-content:center;gap:9px;position:relative;overflow:hidden;}
+.gen-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,#ffffff1e,transparent);transform:translateX(-100%);transition:transform 0.5s;}
+.gen-btn:hover::after{transform:translateX(100%);}
+.gen-credit{background:linear-gradient(135deg,var(--credit),var(--credit2));color:#fff;box-shadow:0 4px 16px #2678aa35;}
+.gen-credit:hover{transform:translateY(-2px);box-shadow:0 7px 22px #2678aa45;}
+.gen-term{background:linear-gradient(135deg,var(--term),var(--term2));color:#fff;box-shadow:0 4px 16px #22885e35;}
+.gen-term:hover{transform:translateY(-2px);box-shadow:0 7px 22px #22885e45;}
+.gen-both{background:linear-gradient(135deg,var(--both),var(--both2));color:#fff;box-shadow:0 4px 16px #a0621e30;}
+.gen-both:hover{transform:translateY(-2px);box-shadow:0 7px 22px #a0621e40;}
+.gen-default{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);box-shadow:0 4px 16px #d4a84332;}
+.gen-default:hover{transform:translateY(-2px);}
+.gen-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none !important;}
+.spin{width:16px;height:16px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:none;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.gen-btn.loading .spin{display:block;}
+.gen-btn.loading .btn-lbl{display:none;}
+
+/* RIGHT PANEL */
+.right-panel{padding:24px 28px;overflow-y:auto;background:var(--bg);}
+.right-panel::-webkit-scrollbar{width:5px;}
+.right-panel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+/* Empty */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:55vh;text-align:center;}
+.es-ico{width:90px;height:90px;background:linear-gradient(135deg,var(--gold-light),#fff);border:1.5px solid var(--border);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:20px;box-shadow:0 5px 24px rgba(0,0,0,0.07);animation:float 3.5s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.es-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:var(--navy);margin-bottom:8px;}
+.es-sub{color:var(--muted);font-size:12px;max-width:380px;line-height:1.75;margin-bottom:24px;}
+.steps{display:flex;flex-direction:column;gap:8px;text-align:left;max-width:340px;width:100%;}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;animation:fadeUp 0.4s ease both;}
+.step:nth-child(1){animation-delay:.1s}.step:nth-child(2){animation-delay:.2s}.step:nth-child(3){animation-delay:.3s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.step-n{width:24px;height:24px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.step-t{font-size:11.5px;color:var(--text2);}
+
+/* Result topbar */
+.res-bar{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:15px 19px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 7px rgba(0,0,0,0.04);flex-wrap:wrap;gap:10px;}
+.rb-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--navy);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.rb-badge{border-radius:14px;padding:2px 9px;font-size:10px;font-weight:600;letter-spacing:0.3px;}
+.rbb-credit{background:var(--credit-light);color:var(--credit);border:1px solid #2678aa30;}
+.rbb-term{background:var(--term-light);color:var(--term);border:1px solid #22885e30;}
+.rbb-both{background:var(--both-light);color:var(--both);border:1px solid #a0621e30;}
+.rb-meta{font-size:10.5px;color:var(--muted);margin-top:3px;}
+.author-tag{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--gold);background:var(--gold-light);border:1px solid #d4a84328;border-radius:4px;padding:1px 6px;}
+.act-row{display:flex;gap:7px;flex-wrap:wrap;}
+.act-btn{background:var(--surface2);border:1.5px solid var(--border);color:var(--text2);border-radius:7px;padding:7px 13px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all 0.14s;}
+.act-btn:hover{border-color:var(--gold);color:var(--gold);background:#fff;}
+.act-primary{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);border-color:transparent;}
+.act-primary:hover{transform:translateY(-1px);box-shadow:0 4px 10px #d4a84328;color:var(--navy);}
+
+/* Stats */
+.stats{display:flex;gap:9px;margin-bottom:16px;flex-wrap:wrap;}
+.stat-p{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:5px 14px;display:flex;align-items:center;gap:6px;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+.sp-dot{width:7px;height:7px;border-radius:50%;}
+.sp-n{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:var(--navy);}
+.sp-l{font-size:10px;color:var(--muted);}
+
+/* Table */
+.tcd-outer{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 2px 9px rgba(0,0,0,0.05);}
+.tcd-scroll{overflow-x:auto;}
+.tcd-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:2000px;}
+.tcd-table thead tr{background:var(--navy);}
+.tcd-table th{padding:10px 12px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;color:#b0c0da;white-space:nowrap;border-right:1px solid #ffffff10;}
+.tcd-table td{padding:8px 12px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);vertical-align:top;line-height:1.55;color:var(--text2);}
+.tcd-table td:last-child,.tcd-table th:last-child{border-right:none;}
+.tcd-table tbody tr:hover{background:#fdf9f2;}
+.tcd-table tbody tr:nth-child(even){background:#faf9f7;}
+.sno-c{text-align:center;color:var(--light);font-family:'DM Mono',monospace;font-size:10px;}
+.tcid-c{font-family:'DM Mono',monospace;font-size:10.5px;font-weight:500;white-space:nowrap;}
+.tcid-credit{color:var(--credit2);}
+.tcid-term{color:var(--term2);}
+.tcid-both{color:var(--both2);}
+.auth-c{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--gold);}
+.desc-c{max-width:200px;font-size:10.5px;}
+.exp-c{max-width:160px;}
+.scn-c{max-width:140px;}
+
+.badge{display:inline-flex;align-items:center;border-radius:11px;padding:2px 8px;font-size:9.5px;font-weight:600;letter-spacing:0.2px;white-space:nowrap;}
+.b-pos{background:#dcfce7;color:#166534;border:1px solid #bbf7d0;}
+.b-neg{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;}
+.b-bnd{background:#fef3c7;color:#92400e;border:1px solid #fde68a;}
+.b-exc{background:#ede9fe;color:#5b21b6;border:1px solid #ddd6fe;}
+.b-pass{background:#dcfce7;color:#166534;}
+.b-fail{background:#fee2e2;color:#991b1b;}
+.b-open{background:#dbeafe;color:#1e40af;}
+.b-closed{background:#dcfce7;color:#166534;}
+.b-na{background:#f1f0ee;color:#9ca3af;}
+
+.loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:55vh;gap:18px;}
+.big-spin{width:48px;height:48px;border:4px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.85s linear infinite;}
+.load-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--navy);}
+.load-msg{font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 16px;font-family:'DM Mono',monospace;min-width:280px;text-align:center;}
+
+.err-box{background:#fff5f5;border:1.5px solid #fca5a5;border-radius:9px;padding:16px 20px;color:#991b1b;font-size:12px;margin:22px;}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);border-left:4px solid var(--gold);border-radius:9px;padding:11px 17px;color:#f0ebe0;font-size:11.5px;z-index:999;animation:toastIn 0.25s ease,toastOut 0.25s ease 2.1s forwards;box-shadow:0 6px 26px rgba(0,0,0,0.22);}
+@keyframes toastIn{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
+@keyframes toastOut{to{opacity:0;transform:translateY(-6px)}}
+
+/* API KEY MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,15,30,0.82);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-box{background:#fff;border-radius:16px;padding:36px 40px;max-width:440px;width:90%;box-shadow:0 24px 80px rgba(0,0,0,0.35);border:1px solid var(--border);}
+.modal-logo{display:flex;align-items:center;gap:12px;margin-bottom:24px;}
+.modal-emblem{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:18px;color:var(--navy);}
+.modal-brand{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--navy);}
+.modal-brand em{color:var(--gold);font-style:normal;}
+.modal-sub{font-size:12px;color:var(--muted);margin-bottom:22px;line-height:1.7;}
+.modal-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600;margin-bottom:7px;}
+.modal-input-row{display:flex;gap:8px;margin-bottom:10px;}
+.modal-input-row input{flex:1;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.5px;}
+.modal-hint{font-size:10.5px;color:var(--light);margin-bottom:22px;display:flex;align-items:center;gap:5px;}
+.modal-btn{width:100%;padding:13px;border:none;border-radius:9px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+.modal-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px #d4a84340;}
+.modal-err{font-size:11px;color:#991b1b;background:#fff5f5;border:1px solid #fca5a5;border-radius:6px;padding:7px 11px;margin-bottom:14px;display:none;}
+.key-bar{background:var(--gold-light);border-bottom:1px solid #d4a84328;padding:5px 28px;display:none;align-items:center;justify-content:space-between;font-size:10.5px;color:#92400e;}
+.key-bar span{font-family:'DM Mono',monospace;}
+.key-change{cursor:pointer;text-decoration:underline;color:var(--muted);font-size:10px;background:none;border:none;font-family:'DM Sans',sans-serif;}
+</style>
+</head>
+<body>
+
+<!-- API KEY MODAL -->
+<div class="modal-overlay" id="apiModal">
+  <div class="modal-box">
+    <div class="modal-logo">
+      <div class="modal-emblem">A</div>
+      <div class="modal-brand">ABSLI <em>TCD Generator</em></div>
+    </div>
+    <div class="modal-sub">Enter your Anthropic API key to power AI test case generation. Your key is stored only in this browser session and never sent anywhere except the Anthropic API.</div>
+    <div class="modal-label">🔑 Anthropic API Key</div>
+    <div class="modal-input-row">
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." onkeydown="if(event.key==='Enter')saveKey()"/>
+    </div>
+    <div class="modal-err" id="modalErr">⚠️ Invalid key format. It should start with <code>sk-ant-</code></div>
+    <div class="modal-hint">🔒 Stays in your browser only &nbsp;·&nbsp; Get yours at <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--gold)">console.anthropic.com</a></div>
+    <button class="modal-btn" onclick="saveKey()">✅ Start Generating Test Cases</button>
+  </div>
+</div>
+
+<!-- KEY BAR -->
+<div class="key-bar" id="keyBar">
+  <span>🔑 API Key: <span id="keyPreview"></span></span>
+  <button class="key-change" onclick="changeKey()">Change Key</button>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="brand">
+    <div class="emblem">A</div>
+    <div>
+      <div class="brand-name">ABSLI <em>TCD Generator</em></div>
+      <div class="brand-sub">Aditya Birla Sun Life Insurance · QA Platform</div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <div class="hdr-chip"><span class="live-dot"></span> AI Active</div>
+    <span id="hdrDate"></span>
+    <div class="hdr-chip" id="tcPill"></div>
+  </div>
+</header>
+
+<!-- PRODUCT SELECTION -->
+<div class="product-section">
+  <div class="ps-header"><div class="ps-title">Select <em>Product</em></div></div>
+  <div class="ps-sub">Choose a product or group — modules will update automatically</div>
+
+  <!-- Credit Life -->
+  <div class="cat-section">
+    <div class="cat-label cat-credit">Credit Life Products</div>
+    <div class="chips-row">
+      <div class="prod-chip" data-key="GSS" data-cat="credit" data-name="Group Smart Select" data-ico="🛡️" onclick="pickProd(this)">
+        <span class="chip-ico">🛡️</span> Group Smart Select <span class="chip-ck">✓</span>
+      </div>
+      <div class="prod-chip" data-key="GSM" data-cat="credit" data-name="Group Smart Supreme" data-ico="👑" onclick="pickProd(this)">
+        <span class="chip-ico">👑</span> Group Smart Supreme <span class="chip-ck">✓</span>
+      </div>
+      <div class="prod-chip" data-key="GAS" data-cat="credit" data-name="ABSLI Group Assured Shield" data-ico="🔰" onclick="pickProd(this)">
+        <span class="chip-ico">🔰</span> ABSLI Group Assured Shield <span class="chip-ck">✓</span>
+      </div>
+      <div class="prod-chip" data-key="GAAP" data-cat="credit" data-name="Group Asset Assured Plan" data-ico="📋" onclick="pickProd(this)">
+        <span class="chip-ico">📋</span> Group Asset Assured Plan <span class="chip-ck">✓</span>
+      </div>
+      <div class="prod-chip" data-key="GBY" data-cat="credit" data-name="ABSLI Group Bima Yojana" data-ico="🏦" onclick="pickProd(this)">
+        <span class="chip-ico">🏦</span> ABSLI Group Bima Yojana <span class="chip-ck">✓</span>
+      </div>
+      <div class="prod-chip" data-key="ALL_CREDIT" data-cat="credit" data-name="All Credit Life Products" data-ico="🔵" onclick="pickProd(this)">
+        <span class="chip-ico">🔵</span> All Credit Life Products <span class="chip-ck">✓</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Term Life -->
+  <div class="cat-section">
+    <div class="cat-label cat-term">Term Life Products</div>
+    <div class="chips-row">
+      <div class="prod-chip" data-key="GPS" data-cat="term" data-name="Group Protection Solution" data-ico="🌿" onclick="pickProd(this)">
+        <span class="chip-ico">🌿</span> Group Protection Solution <span class="chip-ck">✓</span>
+      </div>
+      <div class="prod-chip" data-key="ALL_TERM" data-cat="term" data-name="All Term Life Products" data-ico="🟢" onclick="pickProd(this)">
+        <span class="chip-ico">🟢</span> All Term Life Products <span class="chip-ck">✓</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- All -->
+  <div class="cat-section" style="margin-bottom:0;">
+    <div class="cat-label cat-combo">All Products</div>
+    <div class="chips-row">
+      <div class="prod-chip" data-key="ALL" data-cat="both" data-name="All Products (Credit Life + Term Life)" data-ico="⭐" onclick="pickProd(this)">
+        <span class="chip-ico">⭐</span> All Products — Credit Life + Term Life <span class="chip-ck">✓</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main-layout">
+  <!-- LEFT -->
+  <div class="left-panel">
+    <div class="lp-block">
+      <div class="blk-lbl">Selected Product</div>
+      <div class="sel-strip strip-credit" id="selStrip">
+        <div class="ss-ico" id="selIco">—</div>
+        <div>
+          <div class="ss-name" id="selName">No product selected</div>
+          <div class="ss-cat" id="selCat">Click a product above to begin</div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="fld"><div class="fld-lbl">CR / Sprint</div><input type="text" id="crNum" placeholder="CR-2024-001"/></div>
+        <div class="fld"><div class="fld-lbl">Test Date</div><input type="date" id="testDate"/></div>
+      </div>
+    </div>
+
+    <div class="lp-block">
+      <div class="blk-lbl">Module & Sub-Module</div>
+      <div class="module-row">
+        <div class="fld">
+          <div class="fld-lbl">Module</div>
+          <select id="moduleSelect" onchange="loadSubModules()">
+            <option value="">— Select Module —</option>
+          </select>
+        </div>
+        <div class="fld">
+          <div class="fld-lbl">Sub-Module</div>
+          <select id="subModuleSelect">
+            <option value="">— Select Sub-Module —</option>
+          </select>
+        </div>
+      </div>
+      <div class="mod-chips" id="modChips"></div>
+    </div>
+
+    <div class="srs-block">
+      <div class="srs-hd">
+        <div class="srs-lbl">SRS / User Story / Acceptance Criteria</div>
+        <span class="srs-clr" onclick="clearSRS()">Clear</span>
+      </div>
+      <div class="upload-row">
+        <input type="file" id="fileInput" accept=".txt,.pdf,.doc,.docx" onchange="handleFileUpload(this)"/>
+        <label class="upload-btn" for="fileInput">📎 Upload SRS / BRD</label>
+        <span class="upload-file-label" id="uploadFileName">No file chosen</span>
+        <span class="upload-progress" id="uploadProgress">⏳ Reading...</span>
+      </div>
+      <textarea class="srs-box" id="srsInput" oninput="updCount()"
+        placeholder="Paste your requirement here...&#10;&#10;• SRS document section&#10;• User Story (As a... I want...)&#10;• Acceptance Criteria bullets&#10;• Change Request (CR) details&#10;• BDD Scenarios"></textarea>
+      <div class="chr-count" id="chrCount">0 characters</div>
+    </div>
+
+    <div class="gen-wrap">
+      <button class="gen-btn gen-default" id="genBtn" onclick="generate()">
+        <span class="btn-lbl">⚡ Generate Test Cases</span>
+        <div class="spin"></div>
+      </button>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-panel" id="rightPanel">
+    <div class="empty-state">
+      <div class="es-ico">🧪</div>
+      <div class="es-title">Ready to Generate</div>
+      <div class="es-sub">Select a product, choose module & sub-module, paste your SRS — AI builds your complete TCD instantly.</div>
+      <div class="steps">
+        <div class="step"><div class="step-n">1</div><div class="step-t"><strong>Select product</strong> — individual or full category group</div></div>
+        <div class="step"><div class="step-n">2</div><div class="step-t"><strong>Choose Module & Sub-Module</strong> from the actual product modules</div></div>
+        <div class="step"><div class="step-n">3</div><div class="step-t"><strong>Paste SRS</strong> and click Generate → export to Excel</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── PRODUCT → MODULE → SUBMODULE DATA (from Excel) ───
+const PROD_DATA = {
+  GPS: {
+    name:"Group Protection Solution", cat:"term", ico:"🌿",
+    modules:{
+      "Home":["Home"],
+      "Masters":["Look Up","Sub Payout","Bank Branch","Address Structure","Destination Document Upload","Pin Code Upload","Pin Code Defect Data"],
+      "My Account":["Change Password","Change Product"],
+      "Configuration":["Email Template","Endorsement Automation Verification","Insurer Organization Hierarchy","Insurer Organization Structure","Global Components","Product Setup","Channel Management","User Management","Deviation"],
+      "Client Master":["Client Organization","Master Policy Freelook Factor Mapping","Master Policy Amortization Schedule","Advance Deposit Receipt","Master Policy Appendix Mapping","Master Policy Underwriting Mapping","Affinity Question Map","Policy Account Statement","Voluntary Question Map","Questionnaire","Master Policy – Maker","Master Policy – Checker","Master Policy – View","Deposit Transfer Maker","Deposit Transfer Checker","Deposit Transfer View","Bank Statement Upload","Advance Deposit Receipt Mapping","Advance Deposit Receipt Defect Data","Bank Master","Deposit Receipt Cancellation Maker","Deposit Receipt Cancellation Checker","Bulk Receipt Upload","MPH Account Details"],
+      "New Business":["Member Upload","Defect Data","Voluntary Member Upload","Voluntary Defect Data","Policy View Information","Nischint NB Upload","Nischint NB Defect Data"],
+      "Endorsement":["Member Addition - File Upload","Member Deletion - File Upload","GNB Surrender - File Upload","GNB Surrender - Defect Data","Sum Assured - File Upload","GNB FreeLook - File Upload","GNB FreeLook - Defect Data","Decrease Sum Assured - File Upload","Non Monetary - File Upload","MYRT Non Monetary - File Upload","MYRT Non Monetary - Defect Data","Endorsement Contract","Defect Data","Endorsement Policy View","Member View","GPS UW Decision","Standard Template Mapping","Template Configurator","Client File New Upload","Client File New Upload-User","Past Endorsement Data"],
+      "Underwriting":["Underwriting Requirement Report","Underwriting Medical Test","Under writing Medical Test New","Contact Details","Contact Details Defect Data","Underwriting Details","Core Underwriting"],
+      "Claims":["Claim Upload","Claim Defect Data","Intimation","Registration","Assessment","Approval","Approver Re-Assign","Reopen","View","Status Report","Claim Payout Report","Bulk Claim Upload","Bulk Claim Defect Data"],
+      "Claims - Historical":["Intimation - Historical","Registration - Historical","Assessment - Historical","Approval - Historical","Approver Re-Assign - Historical","Reopen - Historical","View - Historical","Status Report - Historical","Claim Payout Report - Historical","Endorsement Historical Member View"],
+      "Collection":["Payment Schedule","Premium Payment","Bulk Receipting Upload","Bulk Receipting Defect Data","Bulk Reversal Receipting Maker","Bulk Reversal Receipting Checker"],
+      "Renewal":["Renewal Member Upload","Renewal Defect Data","Renewal Policy View Information","Renewal Notice","Member Data Migration","Member Data Migration Defect Data","Stamp Duty Migration","Member Data Migration Report","Early Renewal","Nischint Member Upload"],
+      "Rectification":["New Business Reversal - File Upload","Member Addition Reversal - File Upload","Member Deletion Reversal - File Upload","Sum Assured Reversal- File Upload","Decrease Sum Assured Reversal- File Upload","Renewal Reversal - File Upload","Underwriting Decision Reversal - File Upload","Defect Data","Receipt Reversal","Non Annual Collection Reversal"],
+      "Refund":["Excess Refund Maker","Excess Refund Checker","Refund Status Report","Payout Process","Payout Clearance","Payout Defect Data","Payout ReCreation Batch","Payout Response Upload","Payout Re-Initiation Maker","Payout Re-Initiation Checker","Payout T+1 Response Upload","Payout Response Defect Data","Payout T+1 Defect Data"],
+      "Accounting":["Accounting Process","Process Tax Mapping","Accounting Classification","Accounting Group","Accounting Head","Accounting Sub Head","General Ledger Configuration","Voucher Report","Day Close Scheduler","Day Close Monitor","Collection Bank"],
+      "Reports":["SFQ/MQ Questionnaire Report","Questionnaire Report","SFQ Questionnaire Report","Auto Mailer Report","Active Member Data Report","BSLI Payment Report","COI Report","Enrollment Report","MQandSFQ Underwriting Decision","Details Report","MQ Details Report","Receipt Report","SFQ Declined Report","SFQ Details Report","Voluntary MIS Report","Payout Transaction Report","MYRT Surrender Report","Advance Deposit Receipt Report","Stamp Duty Report","Cost and Benefit Report","Valuation Report","WhatsApp Bitly Report","Bulk COI Scheduler Delivery Report","Endorsement Report","Refund Report","GST Traditional Report","Group Deposit Ageing Report","Group CS Report","Data Dump Report","Business Intelligence Report","Deposit Transfer Status Report","GSTR Report","Summary Report","Group OD Switch Report","Group OD Claim Ageing Report","Voluntary Member Status DashBoard Report","Affinity Active Member Data Report","Affinity Data Dump Report","Affinity Payment Report","Group GST Invoice Report","Payout Summary Report","Bulk COI Scheduler","Non Monetary Report","Nischint COI Report","Nischint Employee Report","Nischint Nominee Report","Modal Renewal Quotation","Endorsement Automation Audit","Bitly Receipt SMS And Email Report"],
+      "Logout":["Logout"]
+    }
+  },
+  GSS: {
+    name:"Group Smart Select", cat:"credit", ico:"🛡️",
+    modules:{
+      "Home":["Home"],
+      "Masters":["Look Up","Sub Payout","Bank Branch","Address Structure","Pin Code Upload","Pin Code Defect Data"],
+      "My Account":["Change Password","Change Product"],
+      "Configuration":["Email Template","Endorsement Automation Verification","Insurer Organization Hierarchy","Insurer Organization Structure","Global Components","Product Setup","Channel Management","User Management","Deviation"],
+      "Client Master":["Client Organization","Master Policy Freelook Factor Mapping","Master Policy Amortization Schedule","Advance Deposit Receipt","Master Policy Appendix Mapping","Master Policy Underwriting Mapping","Policy Account Statement","Questionnaire","Master Policy – Maker","Master Policy – Checker","Master Policy – View","Deposit Transfer Maker","Deposit Transfer Checker","Deposit Transfer View","Bank Statement Upload","Advance Deposit Receipt Mapping","Advance Deposit Receipt Defect Data","Bank Master","Deposit Receipt Cancellation Maker","Deposit Receipt Cancellation Checker","Bulk Receipt Upload","MPH Account Details"],
+      "New Business":["Member Upload","Defect Data","Policy View Information"],
+      "Endorsement":["Free Look / Disbursement Cancellation","Surrender","Bulk Surrender - File Upload","Bulk Surrender Defect Data","Non Monetary - File Upload","Defect Data","Endorsement Policy View","Member View","UW Decision"],
+      "Underwriting":["Underwriting Requirement Report","Underwriting Medical Test","Underwriting Details","Core Underwriting","Reduce Member Benefit for Rate-Up Cases"],
+      "Claims":["Intimation","Registration","Assessment","Approval","Approver Re-Assign","Reopen","View","Status Report","Claim Payout Report","Bulk Claim Upload","Bulk Claim Defect Data"],
+      "Collection":["Bulk Receipting Upload","Bulk Receipting Defect Data","Bulk Reversal Receipting Maker","Bulk Reversal Receipting Checker"],
+      "Rectification":["New Business Reversal - File Upload","Underwriting Decision Reversal - File Upload","Defect Data","Receipt Reversal"],
+      "Refund":["Excess Refund Maker","Excess Refund Checker","Refund Status Report","Payout Process","Payout Clearance","Payout Defect Data","Payout ReCreation Batch","Payout Response Upload","Payout Re-Initiation Maker","Payout Re-Initiation Checker","Payout T+1 Response Upload","Payout Response Defect Data","Payout T+1 Defect Data"],
+      "Accounting":["Accounting Process","Process Tax Mapping","Accounting Classification","Accounting Group","Accounting Head","Accounting Sub Head","General Ledger Configuration","Voucher Report","Day Close Scheduler","Day Close Monitor","Collection Bank"],
+      "Reports":["DBS - SFQ Report","RTGS Reprocess Report","Active Member Data Report","Payout Transaction Report","Status API Reports","Spectrum API Reports","NMBR Report","Advance Deposit Receipt Report","Stamp Duty Report","Cost and Benefit Report","Valuation Report","VALGSS Report","Renova Report","WhatsApp Bitly Report","Bulk COI Scheduler Delivery Report","Endorsement Report","Refund Report","GST Traditional Report","Group Deposit Ageing Report","Group CS Report","Data Dump Report","Business Intelligence Report","Deposit Transfer Status Report","GSTR Report","Summary Report","Group OD Switch Report","Group OD Claim Ageing Report","Outstanding Disbursement Ageing Report","UW Requirement/Client Report","Group GST Invoice Report","Payout Summary Report","Freelook/Disbursement Cancellation Report","Surrender Report","Bulk COI Scheduler","Non Monetary Report","Non Monetary Report GSS","Open Entries Aging","Bitly Receipt SMS And Email Report"],
+      "Logout":["Logout"]
+    }
+  },
+  GSM: {
+    name:"Group Smart Supreme", cat:"credit", ico:"👑",
+    modules:{
+      "Home":["Home"],"Masters":["Look Up","Sub Payout","Bank Branch","Address Structure","Pin Code Upload","Pin Code Defect Data"],"My Account":["Change Password","Change Product"],"Configuration":["Email Template","Endorsement Automation Verification","Insurer Organization Hierarchy","Insurer Organization Structure","Global Components","Product Setup","Channel Management","User Management","Deviation"],"Client Master":["Client Organization","Master Policy Freelook Factor Mapping","Master Policy Amortization Schedule","Advance Deposit Receipt","Master Policy Appendix Mapping","Master Policy Underwriting Mapping","Policy Account Statement","Questionnaire","Master Policy – Maker","Master Policy – Checker","Master Policy – View","Deposit Transfer Maker","Deposit Transfer Checker","Deposit Transfer View","Bank Statement Upload","Advance Deposit Receipt Mapping","Advance Deposit Receipt Defect Data","Bank Master","Deposit Receipt Cancellation Maker","Deposit Receipt Cancellation Checker","Bulk Receipt Upload","MPH Account Details"],"New Business":["Member Upload","Defect Data","Policy View Information"],"Endorsement":["Free Look / Disbursement Cancellation","Surrender","Bulk Surrender - File Upload","Bulk Surrender Defect Data","Non Monetary - File Upload","Defect Data","Endorsement Policy View","Member View","UW Decision"],"Underwriting":["Underwriting Requirement Report","Underwriting Medical Test","Underwriting Details","Core Underwriting","Reduce Member Benefit for Rate-Up Cases"],"Claims":["Intimation","Registration","Assessment","Approval","Approver Re-Assign","Reopen","View","Status Report","Claim Payout Report","Bulk Claim Upload","Bulk Claim Defect Data"],"Collection":["Bulk Receipting Upload","Bulk Receipting Defect Data","Bulk Reversal Receipting Maker","Bulk Reversal Receipting Checker"],"Rectification":["New Business Reversal - File Upload","Underwriting Decision Reversal - File Upload","Defect Data","Receipt Reversal"],"Refund":["Excess Refund Maker","Excess Refund Checker","Refund Status Report","Payout Process","Payout Clearance","Payout Defect Data","Payout ReCreation Batch","Payout Response Upload","Payout Re-Initiation Maker","Payout Re-Initiation Checker","Payout T+1 Response Upload","Payout Response Defect Data","Payout T+1 Defect Data"],"Accounting":["Accounting Process","Process Tax Mapping","Accounting Classification","Accounting Group","Accounting Head","Accounting Sub Head","General Ledger Configuration","Voucher Report","Day Close Scheduler","Day Close Monitor","Collection Bank"],"Reports":["DBS - SFQ Report","RTGS Reprocess Report","Active Member Data Report","Payout Transaction Report","Status API Reports","Spectrum API Reports","NMBR Report","Advance Deposit Receipt Report","Stamp Duty Report","Cost and Benefit Report","Valuation Report","VALGSM Report","Renova Report","WhatsApp Bitly Report","Bulk COI Scheduler Delivery Report","Endorsement Report","Refund Report","GST Traditional Report","Group Deposit Ageing Report","Group CS Report","Data Dump Report","Business Intelligence Report","Deposit Transfer Status Report","GSTR Report","Summary Report","Group OD Switch Report","Group OD Claim Ageing Report","Outstanding Disbursement Ageing Report","UW Requirement/Client Report","Group GST Invoice Report","Payout Summary Report","Freelook/Disbursement Cancellation Report","Surrender Report","Bulk COI Scheduler","Non Monetary Report","Non Monetary Report GSS","Open Entries Aging","Bitly Receipt SMS And Email Report"],"Logout":["Logout"]
+    }
+  },
+  GAS: {
+    name:"ABSLI Group Assured Shield", cat:"credit", ico:"🔰",
+    modules:{
+      "Home":["Home"],"Masters":["Look Up","Sub Payout","Bank Branch","Address Structure","Pin Code Upload","Pin Code Defect Data"],"My Account":["Change Password","Change Product"],"Configuration":["Email Template","Endorsement Automation Verification","Insurer Organization Hierarchy","Insurer Organization Structure","Global Components","Product Setup","Channel Management","User Management","Deviation"],"Client Master":["Client Organization","Master Policy Freelook Factor Mapping","Master Policy Amortization Schedule","Advance Deposit Receipt","Master Policy Appendix Mapping","Master Policy Underwriting Mapping","Affinity Question Map","Policy Account Statement","Voluntary Question Map","Questionnaire","Master Policy – Maker","Master Policy – Checker","Master Policy – View","Deposit Transfer Maker","Deposit Transfer Checker","Deposit Transfer View","Bank Statement Upload","Advance Deposit Receipt Mapping","Advance Deposit Receipt Defect Data","Bank Master","Deposit Receipt Cancellation Maker","Deposit Receipt Cancellation Checker","Bulk Receipt Upload","MPH Account Details"],"New Business":["Member Upload","Defect Data","Policy View Information"],"Endorsement":["Free Look / Disbursement Cancellation","Surrender","Bulk Surrender - File Upload","Bulk Surrender Defect Data","Non Monetary - File Upload","Defect Data","Endorsement Policy View","Member View","UW Decision"],"Underwriting":["Underwriting Requirement Report","Underwriting Medical Test","Underwriting Details","Core Underwriting"],"Claims":["Intimation","Registration","Assessment","Approval","Approver Re-Assign","Reopen","View","Status Report","Claim Payout Report","Bulk Claim Upload","Bulk Claim Defect Data"],"Collection":["Bulk Receipting Upload","Bulk Receipting Defect Data","Bulk Reversal Receipting Maker","Bulk Reversal Receipting Checker"],"Rectification":["New Business Reversal - File Upload","Underwriting Decision Reversal - File Upload","Defect Data","Receipt Reversal"],"Refund":["Excess Refund Maker","Excess Refund Checker","Refund Status Report","Payout Process","Payout Clearance","Payout Defect Data","Payout ReCreation Batch","Payout Response Upload","Payout Re-Initiation Maker","Payout Re-Initiation Checker","Payout T+1 Response Upload","Payout Response Defect Data","Payout T+1 Defect Data"],"Accounting":["Accounting Process","Process Tax Mapping","Accounting Classification","Accounting Group","Accounting Head","Accounting Sub Head","General Ledger Configuration","Voucher Report","Day Close Scheduler","Day Close Monitor","Collection Bank"],"Reports":["DBS - SFQ Report","RTGS Reprocess Report","Active Member Data Report","Payout Transaction Report","Status API Reports","Spectrum API Reports","NMBR Report","Advance Deposit Receipt Report","Stamp Duty Report","Cost and Benefit Report","Valuation Report","VALGAS Report","Renova Report","WhatsApp Bitly Report","Bulk COI Scheduler Delivery Report","Endorsement Report","Refund Report","GST Traditional Report","Group Deposit Ageing Report","Group CS Report","Data Dump Report","Business Intelligence Report","Deposit Transfer Status Report","GSTR Report","Summary Report","Group OD Switch Report","Group OD Claim Ageing Report","Outstanding Disbursement Ageing Report","UW Requirement/Client Report","Group GST Invoice Report","Payout Summary Report","Freelook/Disbursement Cancellation Report","Surrender Report","Bulk COI Scheduler","Non Monetary Report","Non Monetary Report GSS","Open Entries Aging","Bitly Receipt SMS And Email Report"],"Logout":["Logout"]
+    }
+  },
+  GAAP: {
+    name:"Group Asset Assured Plan", cat:"credit", ico:"📋",
+    modules:{
+      "Home":["Home"],"Masters":["Look Up","Sub Payout","Bank Branch","Address Structure","Pin Code Upload","Pin Code Defect Data"],"My Account":["Change Password","Change Product"],"Configuration":["Email Template","Endorsement Automation Verification","Insurer Organization Hierarchy","Insurer Organization Structure","Global Components","Product Setup","Channel Management","User Management","Deviation"],"Client Master":["Client Organization","Master Policy Freelook Factor Mapping","Master Policy Amortization Schedule","Advance Deposit Receipt","Master Policy Appendix Mapping","Master Policy Underwriting Mapping","Affinity Question Map","Policy Account Statement","Voluntary Question Map","Questionnaire","Master Policy – Maker","Master Policy – Checker","Master Policy – View","Deposit Transfer Maker","Deposit Transfer Checker","Deposit Transfer View","Bank Statement Upload","Advance Deposit Receipt Mapping","Advance Deposit Receipt Defect Data","Bank Master","Deposit Receipt Cancellation Maker","Deposit Receipt Cancellation Checker","Bulk Receipt Upload","MPH Account Details"],"New Business":["Member Upload","Defect Data","Policy View Information"],"Endorsement":["Free Look / Disbursement Cancellation","Surrender","Bulk Surrender - File Upload","Bulk Surrender Defect Data","Non Monetary - File Upload","Defect Data","Endorsement Policy View","Member View","UW Decision"],"Underwriting":["Underwriting Requirement Report","Underwriting Medical Test","Underwriting Details","Core Underwriting"],"Claims":["Intimation","Registration","Assessment","Approval","Approver Re-Assign","Reopen","View","Status Report","Claim Payout Report","Bulk Claim Upload","Bulk Claim Defect Data"],"Collection":["Bulk Receipting Upload","Bulk Receipting Defect Data","Bulk Reversal Receipting Maker","Bulk Reversal Receipting Checker"],"Rectification":["New Business Reversal - File Upload","Underwriting Decision Reversal - File Upload","Defect Data","Receipt Reversal"],"Refund":["Excess Refund Maker","Excess Refund Checker","Refund Status Report","Payout Process","Payout Clearance","Payout Defect Data","Payout ReCreation Batch","Payout Response Upload","Payout Re-Initiation Maker","Payout Re-Initiation Checker","Payout T+1 Response Upload","Payout Response Defect Data","Payout T+1 Defect Data"],"Accounting":["Accounting Process","Process Tax Mapping","Accounting Classification","Accounting Group","Accounting Head","Accounting Sub Head","General Ledger Configuration","Voucher Report","Day Close Scheduler","Day Close Monitor","Collection Bank"],"Reports":["DBS - SFQ Report","RTGS Reprocess Report","Active Member Data Report","Payout Transaction Report","Status API Reports","Spectrum API Reports","NMBR Report","Advance Deposit Receipt Report","Stamp Duty Report","Cost and Benefit Report","Valuation Report","VALGAAP Report","Renova Report","WhatsApp Bitly Report","Bulk COI Scheduler Delivery Report","Endorsement Report","Refund Report","GST Traditional Report","Group Deposit Ageing Report","Group CS Report","Data Dump Report","Business Intelligence Report","Deposit Transfer Status Report","GSTR Report","Summary Report","Group OD Switch Report","Group OD Claim Ageing Report","Outstanding Disbursement Ageing Report","UW Requirement/Client Report","Group GST Invoice Report","Payout Summary Report","Freelook/Disbursement Cancellation Report","Surrender Report","Bulk COI Scheduler","Non Monetary Report","Non Monetary Report GSS","Open Entries Aging","Bitly Receipt SMS And Email Report"],"Logout":["Logout"]
+    }
+  },
+  GBY: {
+    name:"ABSLI Group Bima Yojana", cat:"credit", ico:"🏦",
+    modules:{
+      "Home":["Home"],"Masters":["Look Up","Sub Payout","Bank Branch","Address Structure","Pin Code Upload","Pin Code Defect Data"],"My Account":["Change Password","Change Product"],"Configuration":["Email Template","Endorsement Automation Verification","Insurer Organization Hierarchy","Insurer Organization Structure","Global Components","Product Setup","Channel Management","User Management","Deviation"],"Client Master":["Client Organization","Master Policy Freelook Factor Mapping","Master Policy Amortization Schedule","Advance Deposit Receipt","Master Policy Appendix Mapping","Master Policy Underwriting Mapping","Policy Account Statement","Questionnaire","Master Policy – Maker","Master Policy – Checker","Master Policy – View","Deposit Transfer Maker","Deposit Transfer Checker","Deposit Transfer View","Bank Statement Upload","Advance Deposit Receipt Mapping","Advance Deposit Receipt Defect Data","Bank Master","Deposit Receipt Cancellation Maker","Deposit Receipt Cancellation Checker","Bulk Receipt Upload","MPH Account Details"],"New Business":["Member Upload","Defect Data","Policy View Information"],"Endorsement":["Free Look / Disbursement Cancellation","Surrender","Bulk Surrender - File Upload","Bulk Surrender Defect Data","Non Monetary - File Upload","Defect Data","Endorsement Policy View","Member View","UW Decision"],"Underwriting":["Underwriting Requirement Report","Underwriting Medical Test","Underwriting Details","Core Underwriting"],"Claims":["Intimation","Registration","Assessment","Approval","Approver Re-Assign","Reopen","View","Status Report","Claim Payout Report","Bulk Claim Upload","Bulk Claim Defect Data"],"Collection":["Bulk Receipting Upload","Bulk Receipting Defect Data","Bulk Reversal Receipting Maker","Bulk Reversal Receipting Checker"],"Rectification":["New Business Reversal - File Upload","Underwriting Decision Reversal - File Upload","Defect Data","Receipt Reversal"],"Refund":["Excess Refund Maker","Excess Refund Checker","Refund Status Report","Payout Process","Payout Clearance","Payout Defect Data","Payout ReCreation Batch","Payout Response Upload","Payout Re-Initiation Maker","Payout Re-Initiation Checker","Payout T+1 Response Upload","Payout Response Defect Data","Payout T+1 Defect Data"],"Accounting":["Accounting Process","Process Tax Mapping","Accounting Classification","Accounting Group","Accounting Head","Accounting Sub Head","General Ledger Configuration","Voucher Report","Day Close Scheduler","Day Close Monitor","Collection Bank"],"Reports":["DBS - SFQ Report","RTGS Reprocess Report","Active Member Data Report","Payout Transaction Report","Status API Reports","Spectrum API Reports","NMBR Report","Advance Deposit Receipt Report","Stamp Duty Report","Cost and Benefit Report","Valuation Report","VALGMIP Report","Renova Report","WhatsApp Bitly Report","Bulk COI Scheduler Delivery Report","Endorsement Report","Refund Report","GST Traditional Report","Group Deposit Ageing Report","Group CS Report","Data Dump Report","Business Intelligence Report","Deposit Transfer Status Report","GSTR Report","Summary Report","Group OD Switch Report","Group OD Claim Ageing Report","Outstanding Disbursement Ageing Report","UW Requirement/Client Report","Group GST Invoice Report","Payout Summary Report","Freelook/Disbursement Cancellation Report","Surrender Report","Bulk COI Scheduler","Non Monetary Report","Non Monetary Report GSS","Open Entries Aging","Bitly Receipt SMS And Email Report"],"Logout":["Logout"]
+    }
+  }
+};
+
+// Virtual combo entries
+const COMBO_KEYS = {
+  ALL_CREDIT: { name:"All Credit Life Products", cat:"credit", ico:"🔵", keys:["GSS","GSM","GAS","GAAP","GBY"] },
+  ALL_TERM:   { name:"All Term Life Products",   cat:"term",   ico:"🟢", keys:["GPS"] },
+  ALL:        { name:"All Products (Credit Life + Term Life)", cat:"both", ico:"⭐", keys:["GPS","GSS","GSM","GAS","GAAP","GBY"] }
+};
+
+// Get merged modules for a set of keys
+function mergedModules(keys) {
+  const merged = {};
+  keys.forEach(k => {
+    const pd = PROD_DATA[k];
+    if (!pd) return;
+    Object.entries(pd.modules).forEach(([mod, subs]) => {
+      if (!merged[mod]) merged[mod] = new Set();
+      subs.forEach(s => merged[mod].add(s));
+    });
+  });
+  return Object.fromEntries(Object.entries(merged).map(([m,s]) => [m, [...s]]));
+}
+
+// Quick-chip modules
+const QUICK_MODS = ["Home","New Business","Endorsement","Claims","Underwriting","Collection","Renewal","Refund","Rectification","Reports","Accounting","Client Master","Configuration","Masters"];
+
+// ─── STATE ───
+let activeProd = null; // { name, cat, ico, modules:{} }
+let generatedTCs = [];
+
+// ─── PICK PRODUCT ───
+function pickProd(el) {
+  document.querySelectorAll('.prod-chip').forEach(c => c.classList.remove('sel-credit','sel-term','sel-both'));
+  const k = el.dataset.key;
+  const cat = el.dataset.cat;
+  el.classList.add(`sel-${cat}`);
+
+  let name, ico, modules;
+  if (COMBO_KEYS[k]) {
+    const c = COMBO_KEYS[k];
+    name = c.name; ico = c.ico; modules = mergedModules(c.keys);
+  } else {
+    const p = PROD_DATA[k];
+    name = p.name; ico = p.ico; modules = p.modules;
+  }
+  activeProd = { name, cat, ico, modules };
+
+  // Update strip
+  const strip = document.getElementById('selStrip');
+  strip.className = `sel-strip strip-${cat}`;
+  document.getElementById('selIco').textContent = ico;
+  document.getElementById('selName').textContent = name;
+  document.getElementById('selCat').textContent = cat==='credit'?'Credit Life Product':cat==='term'?'Term Life Product':'All Products';
+
+  // Update gen button
+  const btn = document.getElementById('genBtn');
+  btn.className = `gen-btn gen-${cat==='both'?'both':cat}`;
+
+  // Load modules
+  loadModuleDropdown(modules);
+
+  // Quick chips
+  const chips = document.getElementById('modChips');
+  chips.innerHTML = QUICK_MODS.filter(m => modules[m]).map(m =>
+    `<span class="mod-chip" onclick="setMod(this,'${m}')">${m}</span>`
+  ).join('');
+}
+
+function loadModuleDropdown(modules) {
+  const sel = document.getElementById('moduleSelect');
+  sel.innerHTML = '<option value="">— Select Module —</option>' +
+    Object.keys(modules).map(m => `<option value="${m}">${m}</option>`).join('');
+  document.getElementById('subModuleSelect').innerHTML = '<option value="">— Select Sub-Module —</option>';
+}
+
+function loadSubModules() {
+  const mod = document.getElementById('moduleSelect').value;
+  const sub = document.getElementById('subModuleSelect');
+  if (!mod || !activeProd) { sub.innerHTML = '<option value="">— Select Sub-Module —</option>'; return; }
+  const subs = activeProd.modules[mod] || [];
+  sub.innerHTML = '<option value="">All Sub-Modules</option>' + subs.map(s => `<option value="${s}">${s}</option>`).join('');
+  // sync chips
+  document.querySelectorAll('.mod-chip').forEach(c => {
+    c.classList.toggle('active', c.textContent.trim() === mod);
+  });
+}
+
+function setMod(el, val) {
+  document.querySelectorAll('.mod-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('moduleSelect').value = val;
+  loadSubModules();
+}
+
+function clearSRS() { document.getElementById('srsInput').value=''; document.getElementById('chrCount').textContent='0 characters'; }
+function updCount() { document.getElementById('chrCount').textContent = document.getElementById('srsInput').value.length.toLocaleString()+' characters'; }
+
+// ─── GENERATE ───
+async function generate() {
+  if (!activeProd) { toast('⚠️ Please select a product first'); return; }
+  const srs = document.getElementById('srsInput').value.trim();
+  if (!srs) { toast('⚠️ Please paste your SRS or User Story'); return; }
+
+  const module = document.getElementById('moduleSelect').value || 'General';
+  const submod = document.getElementById('subModuleSelect').value || '';
+  const cr = document.getElementById('crNum').value || 'N/A';
+  const raw = document.getElementById('testDate').value;
+  const date = raw ? new Date(raw).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})
+                   : new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+
+  const abbr = module.replace(/[^A-Za-z]/g,'').substring(0,3).toUpperCase() || 'GEN';
+  const fullModule = submod ? `${module} > ${submod}` : module;
+  const catLabel = activeProd.cat==='credit'?'Credit Life':activeProd.cat==='term'?'Term Life':'Credit Life + Term Life';
+
+  const btn = document.getElementById('genBtn');
+  btn.disabled=true; btn.classList.add('loading');
+  showLoading();
+
+  const sys = `You are Senior QA Engineer muthukrishnan at ABSLI (Aditya Birla Sun Life Insurance). Generate Test Case Documents as JSON.
+
+STRICT RULES:
+- TC_ID: ${abbr}TC001, ${abbr}TC002... sequential
+- created_by: "muthukrishnan" (always lowercase)
+- tested_by: "muthukrishnan" (always lowercase)
+- product_name: "${activeProd.name}"
+- module: "${fullModule}"
+- tc_type: ONLY "Positive" | "Negative" | "Boundary" | "Exception"
+- test_case_description: numbered steps "Step 1: ...\nStep 2: ..."
+- expected_result: specific, measurable, system-driven
+- actual_result: "As Expected" for Positive only, else "N/A"
+- status: "Pass" for Positive only, else "N/A"
+- defect: always "N/A"
+- tested_date: "${date}"
+- Generate minimum 18 test cases covering all tc_type values
+- Return ONLY valid JSON array — no text outside
+
+Schema: [{"sno":"1","tc_id":"${abbr}TC001","created_by":"muthukrishnan","product_name":"${activeProd.name}","module":"${fullModule}","functionality":"...","tc_type":"Positive","test_scenario":"...","test_case_description":"Step 1: ...\nStep 2: ...","expected_result":"...","actual_result":"As Expected","status":"Pass","defect":"N/A","tested_by":"muthukrishnan","tested_date":"${date}","comments":"N/A"}]`;
+
+  try {
+    const res = await fetch("/api/claude",{
+      method:"POST", headers:{"Content-Type":"application/json","x-api-key": window._apiKey},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514", max_tokens:4096, system:sys,
+        messages:[{role:"user",content:`CR: ${cr}\nProduct: ${activeProd.name} (${catLabel})\nModule: ${fullModule}\n\nSRS/Requirement:\n${srs}\n\nReturn ONLY JSON array.`}]
+      })
+    });
+    const resText = await res.text(); let data; try { data = JSON.parse(resText); } catch(e) { throw new Error('Server error: ' + resText.substring(0,200)); }
+    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+    if (!data.content || !Array.isArray(data.content)) throw new Error("API Error: " + JSON.stringify(data).substring(0,300));
+    const raw2 = data.content.map(c=>c.text||"").join("");
+    generatedTCs = JSON.parse(raw2.replace(/```json|```/g,"").trim());
+    renderTable(generatedTCs, fullModule, cr, date);
+    document.getElementById('tcPill').textContent = `${generatedTCs.length} TCs`;
+    document.getElementById('tcPill').style.display = 'flex';
+    toast(`✅ ${generatedTCs.length} test cases generated!`);
+  } catch(e) {
+    document.getElementById('rightPanel').innerHTML = `<div class="err-box"><strong>⚠️ Error</strong><br/><br/><code>${e.message}</code></div>`;
+  }
+  btn.disabled=false; btn.classList.remove('loading');
+}
+
+// ─── RENDER ───
+function renderTable(tcs, fullModule, cr, date) {
+  const cat = activeProd.cat;
+  const pos=tcs.filter(t=>t.tc_type==='Positive').length;
+  const neg=tcs.filter(t=>t.tc_type==='Negative').length;
+  const bnd=tcs.filter(t=>/boundary/i.test(t.tc_type)).length;
+  const exc=tcs.length-pos-neg-bnd;
+
+  document.getElementById('rightPanel').innerHTML=`
+    <div class="res-bar">
+      <div>
+        <div class="rb-title">${activeProd.ico} ${fullModule} <span class="rb-badge rbb-${cat}">${activeProd.name}</span></div>
+        <div class="rb-meta">CR: ${cr} &nbsp;·&nbsp; ${tcs.length} Test Cases &nbsp;·&nbsp; ${date} &nbsp;·&nbsp; <span class="author-tag">muthukrishnan</span></div>
+      </div>
+      <div class="act-row">
+        <button class="act-btn act-primary" onclick="exportExcel()">📥 Excel</button>
+        <button class="act-btn" onclick="exportCSV()">📄 CSV</button>
+        <button class="act-btn" onclick="copyTSV()">📋 Copy</button>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat-p"><div class="sp-dot" style="background:var(--navy)"></div><span class="sp-n">${tcs.length}</span><span class="sp-l">Total</span></div>
+      <div class="stat-p"><div class="sp-dot" style="background:#166534"></div><span class="sp-n" style="color:#166534">${pos}</span><span class="sp-l">Positive</span></div>
+      <div class="stat-p"><div class="sp-dot" style="background:#991b1b"></div><span class="sp-n" style="color:#991b1b">${neg}</span><span class="sp-l">Negative</span></div>
+      <div class="stat-p"><div class="sp-dot" style="background:#92400e"></div><span class="sp-n" style="color:#92400e">${bnd}</span><span class="sp-l">Boundary</span></div>
+      <div class="stat-p"><div class="sp-dot" style="background:#5b21b6"></div><span class="sp-n" style="color:#5b21b6">${exc}</span><span class="sp-l">Exception</span></div>
+    </div>
+    <div class="tcd-outer"><div class="tcd-scroll">
+      <table class="tcd-table">
+        <thead><tr><th>#</th><th>TC ID</th><th>Created By</th><th>Product Name</th><th>Module</th><th>Functionality</th><th>TC Type</th><th>Test Scenario</th><th>Test Case Description</th><th>Expected Result</th><th>Actual Result</th><th>Status</th><th>Defect</th><th>Tested By</th><th>Tested Date</th><th>Comments</th></tr></thead>
+        <tbody>${tcs.map((tc,i)=>`<tr>
+          <td class="sno-c">${tc.sno||i+1}</td>
+          <td class="tcid-c tcid-${cat==='both'?'both':cat}">${tc.tc_id}</td>
+          <td class="auth-c">${tc.created_by}</td>
+          <td style="font-size:11px;max-width:120px;">${tc.product_name}</td>
+          <td style="font-size:10.5px;max-width:120px;">${tc.module}</td>
+          <td style="max-width:110px;font-size:10.5px;">${tc.functionality||''}</td>
+          <td>${tcB(tc.tc_type)}</td>
+          <td class="scn-c">${tc.test_scenario||''}</td>
+          <td class="desc-c" style="white-space:pre-line;">${tc.test_case_description||''}</td>
+          <td class="exp-c">${tc.expected_result||''}</td>
+          <td>${tc.actual_result==='N/A'?b('N/A','na'):tc.actual_result}</td>
+          <td>${stB(tc.status)}</td>
+          <td>${defB(tc.defect)}</td>
+          <td class="auth-c">${tc.tested_by}</td>
+          <td style="white-space:nowrap;font-size:10.5px;">${tc.tested_date}</td>
+          <td style="font-size:10.5px;">${tc.comments||'N/A'}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div></div>`;
+}
+
+function b(t,c){return`<span class="badge b-${c}">${t}</span>`;}
+function tcB(t){if(!t)return b('N/A','na');const l=t.toLowerCase();if(l.includes('pos'))return b('Positive','pos');if(l.includes('neg'))return b('Negative','neg');if(l.includes('boun'))return b('Boundary','bnd');return b('Exception','exc');}
+function stB(s){if(!s||s==='N/A')return b('N/A','na');if(s==='Pass')return b('Pass','pass');if(s==='Fail')return b('Fail','fail');return b(s,'na');}
+function defB(d){if(!d||d==='N/A')return b('N/A','na');if(d==='Open')return b('Open','open');if(d==='Closed')return b('Closed','closed');return b(d,'na');}
+
+// ─── EXPORT ───
+const HDR=['S.NO','TC_ID','Created By','Product Name','Module','Functionality','TestCase Type','Test Scenario','Test Case Description','Expected Result','Actual Result','Status','Defect','Tested By','Tested Date','Comments'];
+function rows(){return generatedTCs.map((tc,i)=>[tc.sno||i+1,tc.tc_id,tc.created_by,tc.product_name,tc.module,tc.functionality,tc.tc_type,tc.test_scenario,tc.test_case_description,tc.expected_result,tc.actual_result,tc.status,tc.defect,tc.tested_by,tc.tested_date,tc.comments]);}
+function fname(){return `TCD_${(activeProd?.name||'export').replace(/\W/g,'_')}_${(document.getElementById('moduleSelect').value||'Module').replace(/\W/g,'_')}`;}
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();}
+
+function exportCSV(){
+  if(!generatedTCs.length)return;
+  dl(new Blob([[HDR,...rows()].map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""').replace(/\n/g,' ')}"`).join(',')).join('\n')],{type:'text/csv'}),fname()+'.csv');
+  toast('CSV exported ✓');
+}
+function exportExcel(){
+  if(!generatedTCs.length)return;
+  const hc=activeProd?.cat==='term'?'#1a6b4a':activeProd?.cat==='both'?'#7c4a1e':'#1e5f8a';
+  const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"/><style>body{font-family:Calibri;font-size:11pt;}th{background:${hc};color:#fff;font-weight:bold;border:1px solid #ccc;padding:7px 9px;font-size:10pt;}td{border:1px solid #ddd;padding:5px 8px;vertical-align:top;font-size:10pt;}tr:nth-child(even)td{background:#f9f9f7;}.pos{color:#166534;font-weight:600}.neg{color:#991b1b;font-weight:600}.bnd{color:#92400e;font-weight:600}.exc{color:#5b21b6;font-weight:600}.auth{color:#b8912a;font-size:9pt;}</style></head><body><table><tr>${HDR.map(h=>`<th>${h}</th>`).join('')}</tr>${rows().map(r=>{const t=r[6]||'';const c=t.toLowerCase().includes('pos')?'pos':t.toLowerCase().includes('neg')?'neg':t.toLowerCase().includes('boun')?'bnd':'exc';return`<tr>${r.map((v,i)=>`<td${i===6?` class="${c}"`:i===2||i===13?' class="auth"':''}>${String(v||'').replace(/\n/g,'<br/>')}</td>`).join('')}</tr>`;}).join('')}</table></body></html>`;
+  dl(new Blob([html],{type:'application/vnd.ms-excel;charset=utf-8'}),fname()+'.xls');
+  toast('Excel exported ✓');
+}
+function copyTSV(){
+  if(!generatedTCs.length)return;
+  navigator.clipboard.writeText([HDR,...rows()].map(r=>r.map(c=>String(c||'').replace(/\n/g,' ')).join('\t')).join('\n')).then(()=>toast('Copied! Paste into Excel ✓'));
+}
+
+// ─── UI HELPERS ───
+function showLoading(){
+  const msgs=['📖 Reading requirements...','🔍 Identifying test scenarios...','✍️ Writing Positive cases...','⚠️ Writing Negative cases...','📐 Adding Boundary & Exception...','📋 Formatting TCD...','✅ Almost ready...'];
+  let i=0;
+  document.getElementById('rightPanel').innerHTML=`<div class="loading-wrap"><div class="big-spin"></div><div class="load-title">Generating for ${activeProd?.name}</div><div class="load-msg" id="loadMsg">${msgs[0]}</div></div>`;
+  const iv=setInterval(()=>{const el=document.getElementById('loadMsg');if(el&&i<msgs.length-1)el.textContent=msgs[++i];else clearInterval(iv);},1300);
+}
+function toast(msg){const t=document.createElement('div');t.className='toast';t.innerHTML=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2400);}
+
+// ─── FILE UPLOAD ───
+async function handleFileUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const nameEl = document.getElementById('uploadFileName');
+  const progEl = document.getElementById('uploadProgress');
+  nameEl.textContent = file.name;
+  progEl.style.display = 'inline';
+
+  try {
+    const ext = file.name.split('.').pop().toLowerCase();
+    let text = '';
+
+    if (ext === 'txt') {
+      text = await file.text();
+    } else if (ext === 'pdf') {
+      text = await extractPdfText(file);
+    } else if (ext === 'doc' || ext === 'docx') {
+      text = await extractDocxText(file);
+    } else {
+      text = await file.text();
+    }
+
+    if (text && text.trim()) {
+      const cur = document.getElementById('srsInput').value.trim();
+      document.getElementById('srsInput').value = cur ? cur + '\n\n' + text.trim() : text.trim();
+      updCount();
+      toast(`✅ ${file.name} loaded (${text.length.toLocaleString()} chars)`);
+    } else {
+      toast('⚠️ Could not extract text from file');
+    }
+  } catch(e) {
+    toast('⚠️ File read error: ' + e.message);
+  }
+  progEl.style.display = 'none';
+  input.value = '';
+}
+
+async function extractPdfText(file) {
+  // Use PDF.js from CDN
+  if (!window.pdfjsLib) {
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+  const ab = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+  let out = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const tc = await page.getTextContent();
+    out += tc.items.map(item => item.str).join(' ') + '\n';
+  }
+  return out;
+}
+
+async function extractDocxText(file) {
+  // Use mammoth.js from CDN
+  if (!window.mammoth) {
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js');
+  }
+  const ab = await file.arrayBuffer();
+  const result = await mammoth.extractRawText({ arrayBuffer: ab });
+  return result.value;
+}
+
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+// ─── API KEY MODAL ───
+window._apiKey = localStorage.getItem('absli_key') || '';
+
+function saveKey() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  const err = document.getElementById('modalErr');
+  if (!val.startsWith('sk-ant-')) { err.style.display='block'; return; }
+  err.style.display='none';
+  window._apiKey = val;
+  localStorage.setItem('absli_key', val);
+  document.getElementById('apiModal').style.display='none';
+  document.getElementById('keyBar').style.display='flex';
+  document.getElementById('keyPreview').textContent = val.substring(0,18)+'••••••••';
+  toast('🔑 API Key saved — ready to generate!');
+}
+
+function changeKey() {
+  window._apiKey = '';
+  localStorage.removeItem('absli_key');
+  document.getElementById('apiKeyInput').value='';
+  document.getElementById('apiModal').style.display='flex';
+  document.getElementById('keyBar').style.display='none';
+}
+
+// Show modal on load if no key
+if (!window._apiKey) {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('apiModal').style.display='flex';
+  });
+} else {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('apiModal').style.display='none';
+    document.getElementById('keyBar').style.display='flex';
+    document.getElementById('keyPreview').textContent = window._apiKey.substring(0,18)+'••••••••';
+  });
+}
+
+// ─── INIT ───
+document.getElementById('testDate').value=new Date().toISOString().split('T')[0];
+document.getElementById('hdrDate').textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+</script>
+</body>
+</html>
